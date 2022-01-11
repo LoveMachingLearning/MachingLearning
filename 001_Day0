@@ -1,0 +1,201 @@
+Python+tensorflow学习
+安装 tensorflow 以及相关模块
+
+根据前期准备，认同多数大牛所说的tensorflow是多数基础薄弱者的首选框架，其实我哪是基础薄弱，我那是完全零基础，甚至还陷进地平线一大截啊！
+
+于是首先就是安装这个模块了。
+今天学习参照的博文是：
+https://www.cnblogs.com/lvsling/p/8672404.html
+https://blog.csdn.net/j497205974/article/details/79780058
+https://www.cnblogs.com/conver/p/11141176.html
+https://blog.csdn.net/u012679707/article/details/79898530
+https://blog.csdn.net/qq_41720475/article/details/81978694
+
+【直接安装tensorflow】
+在windows系统的cmd中执行如下：
+```
+C:\WINDOWS\system32>python -m pip install --upgrade pip
+Collecting pip
+  Downloading https://files.pythonhosted.org/packages/30/db/9e38760b32e3e7f40cce46dd5fb107b8c73840df38f0046d8e6514e675a1/pip-19.2.3-py2.py3-none-any.whl (1.4MB)
+     |████████████████████████████████| 1.4MB 656kB/s
+Installing collected packages: pip
+  Found existing installation: pip 19.1.1
+    Uninstalling pip-19.1.1:
+      Successfully uninstalled pip-19.1.1
+Successfully installed pip-19.2.3
+
+C:\WINDOWS\system32>pip install tensorflow==1.14.0
+Collecting tensorflow==1.14.0
+  Downloading https://files.pythonhosted.org/packages/bf/4a/5c86ed8b245aa48f9f819b13a0a9039e9126ba19fdd0c7e0b8026c12315a/tensorflow-1.14.0-cp36-cp36m-win_amd64.whl (68.3MB)
+     |████████████████████████████████| 68.3MB 504kB/s
+Requirement already satisfied: wheel>=0.26 in g:\w10_1\python\python365\lib\site-packages (from tensorflow==1.14.0) (0.31.1)
+Collecting tensorflow-estimator<1.15.0rc0,>=1.14.0rc0 (from tensorflow==1.14.0)
+  Downloading https://files.pythonhosted.org/packages/3c/d5/21860a5b11caf0678fbc8319341b0ae21a07156911132e0e71bffed0510d/tensorflow_estimator-1.14.0-py2.py3-none-any.whl (488kB)
+     |████████████████████████████████| 491kB 187kB/s
+Collecting termcolor>=1.1.0 (from tensorflow==1.14.0)
+  Downloading https://files.pythonhosted.org/packages/8a/48/a76be51647d0eb9f10e2a4511bf3ffb8cc1e6b14e9e4fab46173aa79f981/termcolor-1.1.0.tar.gz
+Collecting grpcio>=1.8.6 (from tensorflow==1.14.0)
+  Downloading https://files.pythonhosted.org/packages/9b/03/b18e4402007f11b42aefebba56443572faf255b9216e40e3d128c774a48d/grpcio-1.23.0-cp36-cp36m-win_amd64.whl (1.6MB)
+     |████████████████████████████████| 1.6MB 819kB/s
+Collecting keras-preprocessing>=1.0.5 (from tensorflow==1.14.0)
+  Downloading https://files.pythonhosted.org/packages/28/6a/8c1f62c37212d9fc441a7e26736df51ce6f0e38455816445471f10da4f0a/Keras_Preprocessing-1.1.0-py2.py3-none-any.whl (41kB)
+     |████████████████████████████████| 51kB 409kB/s
+Requirement already satisfied: six>=1.10.0 in g:\w10_1\python\python365\lib\site-packages\six-1.11.0-py3.6.egg (from tensorflow==1.14.0) (1.11.0)
+Collecting protobuf>=3.6.1 (from tensorflow==1.14.0)
+  Downloading https://files.pythonhosted.org/packages/09/36/285541664581d34d869c44921971a8e6cd1059600610edd133e2f0e8823c/protobuf-3.9.1-cp36-cp36m-win_amd64.whl (1.1MB)
+     |████████████████████████████████| 1.1MB 243kB/s
+Collecting keras-applications>=1.0.6 (from tensorflow==1.14.0)
+  Downloading https://files.pythonhosted.org/packages/71/e3/19762fdfc62877ae9102edf6342d71b28fbfd9dea3d2f96a882ce099b03f/Keras_Applications-1.0.8-py3-none-any.whl (50kB)
+     |████████████████████████████████| 51kB 233kB/s
+Collecting numpy<2.0,>=1.14.5 (from tensorflow==1.14.0)
+  Downloading https://files.pythonhosted.org/packages/b7/c1/a58630a439aa10a285169b4a122bc9f7a9a4392e4ec39602f0a60b2693db/numpy-1.17.0-cp36-cp36m-win_amd64.whl (12.8MB)
+     |████████████████████████████████| 12.8MB 598kB/s
+Collecting wrapt>=1.11.1 (from tensorflow==1.14.0)
+  Downloading https://files.pythonhosted.org/packages/23/84/323c2415280bc4fc880ac5050dddfb3c8062c2552b34c2e512eb4aa68f79/wrapt-1.11.2.tar.gz
+Collecting astor>=0.6.0 (from tensorflow==1.14.0)
+  Downloading https://files.pythonhosted.org/packages/d1/4f/950dfae467b384fc96bc6469de25d832534f6b4441033c39f914efd13418/astor-0.8.0-py2.py3-none-any.whl
+Collecting tensorboard<1.15.0,>=1.14.0 (from tensorflow==1.14.0)
+  Downloading https://files.pythonhosted.org/packages/91/2d/2ed263449a078cd9c8a9ba50ebd50123adf1f8cfbea1492f9084169b89d9/tensorboard-1.14.0-py3-none-any.whl (3.1MB)
+     |████████████████████████████████| 3.2MB 284kB/s
+Collecting gast>=0.2.0 (from tensorflow==1.14.0)
+  Downloading https://files.pythonhosted.org/packages/4e/35/11749bf99b2d4e3cceb4d55ca22590b0d7c2c62b9de38ac4a4a7f4687421/gast-0.2.2.tar.gz
+Collecting absl-py>=0.7.0 (from tensorflow==1.14.0)
+  Downloading https://files.pythonhosted.org/packages/da/3f/9b0355080b81b15ba6a9ffcf1f5ea39e307a2778b2f2dc8694724e8abd5b/absl-py-0.7.1.tar.gz (99kB)
+     |████████████████████████████████| 102kB 226kB/s
+Collecting google-pasta>=0.1.6 (from tensorflow==1.14.0)
+  Downloading https://files.pythonhosted.org/packages/d0/33/376510eb8d6246f3c30545f416b2263eee461e40940c2a4413c711bdf62d/google_pasta-0.1.7-py3-none-any.whl (52kB)
+     |████████████████████████████████| 61kB 261kB/s
+Requirement already satisfied: setuptools in g:\w10_1\python\python365\lib\site-packages (from protobuf>=3.6.1->tensorflow==1.14.0) (40.2.0)
+Collecting h5py (from keras-applications>=1.0.6->tensorflow==1.14.0)
+  Downloading https://files.pythonhosted.org/packages/01/1e/115c4403544a91001d9c618748b2e8786db45544e36b8a6cf3c525e9b57f/h5py-2.9.0-cp36-cp36m-win_amd64.whl (2.4MB)
+     |████████████████████████████████| 2.4MB 181kB/s
+Requirement already satisfied: werkzeug>=0.11.15 in g:\w10_1\python\python365\lib\site-packages (from tensorboard<1.15.0,>=1.14.0->tensorflow==1.14.0) (0.15.2)
+Collecting markdown>=2.6.8 (from tensorboard<1.15.0,>=1.14.0->tensorflow==1.14.0)
+  Downloading https://files.pythonhosted.org/packages/c0/4e/fd492e91abdc2d2fcb70ef453064d980688762079397f779758e055f6575/Markdown-3.1.1-py2.py3-none-any.whl (87kB)
+     |████████████████████████████████| 92kB 490kB/s
+Building wheels for collected packages: termcolor, wrapt, gast, absl-py
+  Building wheel for termcolor (setup.py) ... done
+  Created wheel for termcolor: filename=termcolor-1.1.0-cp36-none-any.whl size=4006 sha256=9832197bec447ab1daac8e2dad4a356d96b91ee1430813c6bf7244fcb55c1727
+  Stored in directory: C:\Users\pw\AppData\Local\pip\Cache\wheels\7c\06\54\bc84598ba1daf8f970247f550b175aaaee85f68b4b0c5ab2c6
+  Building wheel for wrapt (setup.py) ... done
+  Created wheel for wrapt: filename=wrapt-1.11.2-cp36-cp36m-win_amd64.whl size=35845 sha256=64658af42255f0e12bb90a04482dcec8afea783ca4f4191a5e8d17aaba518323
+  Stored in directory: C:\Users\pw\AppData\Local\pip\Cache\wheels\d7\de\2e\efa132238792efb6459a96e85916ef8597fcb3d2ae51590dfd
+  Building wheel for gast (setup.py) ... done
+  Created wheel for gast: filename=gast-0.2.2-cp36-none-any.whl size=6594 sha256=f45f7ba08f1d2c79dd0685e90c711e80e616587949c7bce0a147964963375676
+  Stored in directory: C:\Users\pw\AppData\Local\pip\Cache\wheels\5c\2e\7e\a1d4d4fcebe6c381f378ce7743a3ced3699feb89bcfbdadadd
+  Building wheel for absl-py (setup.py) ... done
+  Created wheel for absl-py: filename=absl_py-0.7.1-cp36-none-any.whl size=113722 sha256=24da86b6929e6adf605d039f9253fcd46a53edf0b771c80e338464545920705d
+  Stored in directory: C:\Users\pw\AppData\Local\pip\Cache\wheels\ee\98\38\46cbcc5a93cfea5492d19c38562691ddb23b940176c14f7b48
+Successfully built termcolor wrapt gast absl-py
+ERROR: tensorboard 1.14.0 has requirement setuptools>=41.0.0, but you'll have setuptools 40.2.0 which is incompatible.
+Installing collected packages: tensorflow-estimator, termcolor, grpcio, numpy, keras-preprocessing, protobuf, h5py, keras-applications, wrapt, astor, absl-py, markdown, tensorboard, gast, google-pasta, tensorflow
+  Found existing installation: wrapt 1.10.11
+    Uninstalling wrapt-1.10.11:
+      Successfully uninstalled wrapt-1.10.11
+Successfully installed absl-py-0.7.1 astor-0.8.0 gast-0.2.2 google-pasta-0.1.7 grpcio-1.23.0 h5py-2.9.0 keras-applications-1.0.8 keras-preprocessing-1.1.0 markdown-3.1.1 numpy-1.17.0 protobuf-3.9.1 tensorboard-1.14.0 tensorflow-1.14.0 tensorflow-estimator-1.14.0 termcolor-1.1.0 wrapt-1.11.2
+```
+然而发现有一处错误：
+ERROR: tensorboard 1.14.0 has requirement setuptools>=41.0.0, but you'll have setuptools 40.2.0 which is incompatible.
+这下感觉怕是失败了。经过搜寻发现，现在是
+setuptools
+的版本问题。
+于是升级setuptools
+```
+C:\Users\pw>pip install --upgrade setuptools
+Collecting setuptools
+  Downloading https://files.pythonhosted.org/packages/b2/86/095d2f7829badc207c893dd4ac767e871f6cd547145df797ea26baea4e2e/setuptools-41.2.0-py2.py3-none-any.whl (576kB)
+     |████████████████████████████████| 583kB 182kB/s
+Installing collected packages: setuptools
+  Found existing installation: setuptools 40.2.0
+    Uninstalling setuptools-40.2.0:
+      Successfully uninstalled setuptools-40.2.0
+Successfully installed setuptools-41.2.0with 
+```
+然后作好准备重新安装，结果 发现，刚才虽然报错，结果刚才还是已经安装成功了：
+```
+C:\Users\pw>pip install tensorflow==1.14.0
+Requirement already satisfied: tensorflow==1.14.0 in g:\w10_1\python\python365\lib\site-packages (1.14.0)
+Requirement already satisfied: absl-py>=0.7.0 in g:\w10_1\python\python365\lib\site-packages (from tensorflow==1.14.0) (0.7.1)
+Requirement already satisfied: termcolor>=1.1.0 in g:\w10_1\python\python365\lib\site-packages (from tensorflow==1.14.0) (1.1.0)
+Requirement already satisfied: tensorflow-estimator<1.15.0rc0,>=1.14.0rc0 in g:\w10_1\python\python365\lib\site-packages (from tensorflow==1.14.0) (1.14.0)
+Requirement already satisfied: wrapt>=1.11.1 in g:\w10_1\python\python365\lib\site-packages (from tensorflow==1.14.0) (1.11.2)
+Requirement already satisfied: protobuf>=3.6.1 in g:\w10_1\python\python365\lib\site-packages (from tensorflow==1.14.0) (3.9.1)
+Requirement already satisfied: tensorboard<1.15.0,>=1.14.0 in g:\w10_1\python\python365\lib\site-packages (from tensorflow==1.14.0) (1.14.0)
+Requirement already satisfied: google-pasta>=0.1.6 in g:\w10_1\python\python365\lib\site-packages (from tensorflow==1.14.0) (0.1.7)
+Requirement already satisfied: gast>=0.2.0 in g:\w10_1\python\python365\lib\site-packages (from tensorflow==1.14.0) (0.2.2)
+Requirement already satisfied: keras-applications>=1.0.6 in g:\w10_1\python\python365\lib\site-packages (from tensorflow==1.14.0) (1.0.8)
+Requirement already satisfied: keras-preprocessing>=1.0.5 in g:\w10_1\python\python365\lib\site-packages (from tensorflow==1.14.0) (1.1.0)
+Requirement already satisfied: numpy<2.0,>=1.14.5 in g:\w10_1\python\python365\lib\site-packages (from tensorflow==1.14.0) (1.17.0)
+Requirement already satisfied: grpcio>=1.8.6 in g:\w10_1\python\python365\lib\site-packages (from tensorflow==1.14.0) (1.23.0)
+Requirement already satisfied: wheel>=0.26 in g:\w10_1\python\python365\lib\site-packages (from tensorflow==1.14.0) (0.31.1)
+Requirement already satisfied: astor>=0.6.0 in g:\w10_1\python\python365\lib\site-packages (from tensorflow==1.14.0) (0.8.0)
+Requirement already satisfied: six>=1.10.0 in g:\w10_1\python\python365\lib\site-packages\six-1.11.0-py3.6.egg (from tensorflow==1.14.0) (1.11.0)
+Requirement already satisfied: setuptools in g:\w10_1\python\python365\lib\site-packages (from protobuf>=3.6.1->tensorflow==1.14.0) (41.2.0)
+Requirement already satisfied: werkzeug>=0.11.15 in g:\w10_1\python\python365\lib\site-packages (from tensorboard<1.15.0,>=1.14.0->tensorflow==1.14.0) (0.15.2)
+Requirement already satisfied: markdown>=2.6.8 in g:\w10_1\python\python365\lib\site-packages (from tensorboard<1.15.0,>=1.14.0->tensorflow==1.14.0) (3.1.1)
+Requirement already satisfied: h5py in g:\w10_1\python\python365\lib\site-packages (from keras-applications>=1.0.6->tensorflow==1.14.0) (2.9.0)
+
+C:\Users\pw>pip install tensorboard
+Requirement already satisfied: tensorboard in g:\w10_1\python\python365\lib\site-packages (1.14.0)
+Requirement already satisfied: grpcio>=1.6.3 in g:\w10_1\python\python365\lib\site-packages (from tensorboard) (1.23.0)
+Requirement already satisfied: absl-py>=0.4 in g:\w10_1\python\python365\lib\site-packages (from tensorboard) (0.7.1)
+Requirement already satisfied: numpy>=1.12.0 in g:\w10_1\python\python365\lib\site-packages (from tensorboard) (1.17.0)
+Requirement already satisfied: six>=1.10.0 in g:\w10_1\python\python365\lib\site-packages\six-1.11.0-py3.6.egg (from tensorboard) (1.11.0)
+Requirement already satisfied: protobuf>=3.6.0 in g:\w10_1\python\python365\lib\site-packages (from tensorboard) (3.9.1)
+Requirement already satisfied: werkzeug>=0.11.15 in g:\w10_1\python\python365\lib\site-packages (from tensorboard) (0.15.2)
+Requirement already satisfied: markdown>=2.6.8 in g:\w10_1\python\python365\lib\site-packages (from tensorboard) (3.1.1)
+Requirement already satisfied: wheel>=0.26; python_version >= "3" in g:\w10_1\python\python365\lib\site-packages (from tensorboard) (0.31.1)
+Requirement already satisfied: setuptools>=41.0.0 in g:\w10_1\python\python365\lib\site-packages (from tensorboard) (41.2.0)
+```
+
+【这时注意到了那个刚才出错 的 tensorboard】
+专门搜寻后发现，这是个神奇的工具 ，可以将神经网络的训练过程展示成思维导图的样子。
+https://blog.csdn.net/u012679707/article/details/79898530
+使用方法是，在训练神经网络时，将tensorflow对象的session(会话)的运算图（graph）保存为Log文件集合：
+```
+writer = tf.summary.FileWriter('logs/', sess.graph)
+```
+
+然后在cmd命令行中，运行tensorboard来读取这个log目录即可。
+```
+cd 【log文件夹所在的上级目录】
+tensorboard --logdir=logs
+```
+logs就是Log文件所在目录名。
+
+【安装另一个可视化组件或者是绘图组件matplotlib】
+
+```
+C:\WINDOWS\system32>pip install matplotlib
+Collecting matplotlib
+  Downloading https://files.pythonhosted.org/packages/cc/eb/fd7a5f3c1484e8d2590ff94ca0b89941940a916394f719ab3bb7279e1970/matplotlib-3.1.1-cp36-cp36m-win_amd64.whl (9.1MB)
+     |████████████████████████████████| 9.1MB 6.4MB/s
+Collecting python-dateutil>=2.1 (from matplotlib)
+  Downloading https://files.pythonhosted.org/packages/41/17/c62faccbfbd163c7f57f3844689e3a78bae1f403648a6afb1d0866d87fbb/python_dateutil-2.8.0-py2.py3-none-any.whl (226kB)
+     |████████████████████████████████| 235kB 595kB/s
+Collecting pyparsing!=2.0.4,!=2.1.2,!=2.1.6,>=2.0.1 (from matplotlib)
+  Downloading https://files.pythonhosted.org/packages/11/fa/0160cd525c62d7abd076a070ff02b2b94de589f1a9789774f17d7c54058e/pyparsing-2.4.2-py2.py3-none-any.whl (65kB)
+     |████████████████████████████████| 71kB 762kB/s
+Requirement already satisfied: numpy>=1.11 in g:\w10_1\python\python365\lib\site-packages (from matplotlib) (1.17.0)
+Collecting cycler>=0.10 (from matplotlib)
+  Downloading https://files.pythonhosted.org/packages/f7/d2/e07d3ebb2bd7af696440ce7e754c59dd546ffe1bbe732c8ab68b9c834e61/cycler-0.10.0-py2.py3-none-any.whl
+Collecting kiwisolver>=1.0.1 (from matplotlib)
+  Downloading https://files.pythonhosted.org/packages/64/46/75ab48386cbd56065f5542360562be524ad599911455b6d95520cb118613/kiwisolver-1.1.0-cp36-none-win_amd64.whl (57kB)
+     |████████████████████████████████| 61kB 103kB/s
+Requirement already satisfied: six>=1.5 in g:\w10_1\python\python365\lib\site-packages\six-1.11.0-py3.6.egg (from python-dateutil>=2.1->matplotlib) (1.11.0)
+Requirement already satisfied: setuptools in g:\w10_1\python\python365\lib\site-packages (from kiwisolver>=1.0.1->matplotlib) (41.2.0)
+Installing collected packages: python-dateutil, pyparsing, cycler, kiwisolver, matplotlib
+Successfully installed cycler-0.10.0 kiwisolver-1.1.0 matplotlib-3.1.1 pyparsing-2.4.2 python-dateutil-2.8.0
+```
+这个组件安装非常顺利。
+
+【简单检查组件是否安装成功】
+
+在一个新的Py文件中写了两行代码：
+```
+import tensorflow as tf
+import tensorboard as tb
+
+```
+
+没有提示错误，则证明成功 了。
