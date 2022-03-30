@@ -1,0 +1,101 @@
+今天继续尝试准备做入门级的人工智能——识别手写数字。完全按教程文章照打一遍，加上自己的批注理解。
+
+今天继续学习参照的博文是：
+https://blog.csdn.net/hustqb/article/details/80222055
+
+【TensorFlow生成随机数张量或向量】
+Tf中可以非常方便的生成需要的随机值组成的指定尺寸的张量（矩阵）或向量
+使用的方法是：
+tf.ramdom_normal()
+方法 ，当然我发现还有其它一些类似以ramdom_开头的方法。
+来自博文： https://blog.csdn.net/dcrmg/article/details/79028043
+解释如下：
+tf.random_normal()函数用于从服从指定正太分布的数值中取出指定个数的值。
+tf.random_normal(shape, mean=0.0, stddev=1.0, dtype=tf.float32, seed=None, name=None)
+    shape: 输出张量（矩阵）的形状（就是长宽多少），必选
+    mean: 正态分布的均值，默认为0
+    stddev: 正态分布的标准差，默认为1.0
+    dtype: 输出的类型，默认为tf.float32
+    seed: 随机数种子，是一个整数，当设置之后，每次生成的随机数都一样
+    name: 操作（此定义的运算）的名称(name)
+在今天的示例中，用此函数来定义了隐藏层与输出层所需要的权重w与偏置量b的预设值张量或向量：
+```
+#下面定义预设的隐藏层所需要的权重与偏置值的正态分布集合
+w1=tf.Variable(tf.random_normal([784,300],stddev=0.03),name='w1')
+b1=tf.Variable(tf.random_normal([300]),name="b1")
+
+#下面定义预设的输出层所需要的权重与偏置值
+w2=tf.Variable(tf.random_normal([300,10],stddev=0.03),name='w2')
+b2=tf.Variable(tf.random_normal([10]),name='b2')
+```
+不过，我发现，有的资料上也没有直接使用随机值来初始化权重与偏置量，而是全部初始化为0值组成的一个张量或变量，
+代码如下：
+```
+w1=tf.Variable(tf.zeros([784,300]),name='w1')
+b1=tf.Variable(tf.zeros([300]),name="b1")
+
+
+```
+此处使用了zeros方法，此方法将所需要创建的张量与向量的每个元素都初始化为0。
+
+【今天完成的代码】
+于是今天将昨天代码继续完成后的代码如下：
+```
+import tensorflow as tf
+import input_data
+
+# 超参数
+learning_rate = 0.5
+epochs = 10
+batch_size = 100
+
+#获取图片数据集
+mnist=input_data.read_data_sets("MNIST_data/",one_hot=True)
+#定义一个点位节点变量表示输入层所需要的矩阵——就是一系列的训练图片集，因为每张图片的像素是28x28,所以每张图片的总像素为：784
+x=tf.placeholder("float",[None,784])
+#上一行代码中，“float”指明了此变量的数据类型，后面的列表中，指明了一个矩形区域，其中None表示任意数，在真正执行这个变量时，再设置也可。
+#placeholder点位节点表示 一个等待输入的节点。
+#下面是输出层所需要的点位节点，输出为one_hot模式，我的理解是，one_hot模式就是一个有十个元素的列表，每个元素都只能取0-9之间的一个整数值，用以表示输出结果（也就是神经网络猜测（预测）的结果）
+y=tf.placeholder("float",[None,9])
+
+#下面定义预设的隐藏层所需要的权重与偏置值的正态分布集合
+w1=tf.Variable(tf.random_normal([784,300],stddev=0.03),name='w1')
+b1=tf.Variable(tf.random_normal([300]),name="b1")
+#w1=tf.Variable(tf.zeros([784,300]),name='w1')
+#b1=tf.Variable(tf.zeros([300]),name="b1")
+
+#下面定义预设的输出层所需要的权重与偏置值
+w2=tf.Variable(tf.random_normal([300,10],stddev=0.03),name='w2')
+b2=tf.Variable(tf.random_normal([10]),name='b2')
+'''
+https://blog.csdn.net/dcrmg/article/details/79028043
+tf.random_normal()函数用于从服从指定正太分布的数值中取出指定个数的值。
+tf.random_normal(shape, mean=0.0, stddev=1.0, dtype=tf.float32, seed=None, name=None)
+    shape: 输出张量的形状，必选
+    mean: 正态分布的均值，默认为0
+    stddev: 正态分布的标准差，默认为1.0
+    dtype: 输出的类型，默认为tf.float32
+    seed: 随机数种子，是一个整数，当设置之后，每次生成的随机数都一样
+    name: 操作的名称
+'''
+#下面构造隐藏层网络，定义运算
+hidden_out=tf.add(tf.matmul(x,w1),b1) #--hidden_out=wx+b
+hidden_out=tf.nn.relu(hidden_out)
+'''
+relu运算：
+https://www.cnblogs.com/xh_chiang/p/9132524.html
+TF-激活函数 tf.nn.relu 介绍
+tf.nn.relu(features, name = None)
+ 这个函数的作用是计算激活函数 relu，即 max(features, 0)。即将矩阵中每行的非最大值置0。
+import tensorflow as tf
+a = tf.constant([-1.0, 2.0])
+with tf.Session() as sess:
+    b = tf.nn.relu(a)
+    print sess.run(b)
+以上程序输出的结果是：[0. 2.]
+'''
+
+#构造输出层，定义运算
+
+
+```
