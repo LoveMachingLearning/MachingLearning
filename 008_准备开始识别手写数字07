@@ -1,0 +1,108 @@
+书写尝试自己的手写数字的代码。
+
+今天学习参照的博文是：
+https://www.cnblogs.com/qiuhlee/p/9866222.html
+这篇博文是讲卷积神经网络的，现在完全看不懂，但自认为掌握了它测试自己书写的数字的代码的一些规律，于是自己写了个测试Py文件但还没有真正测试，下面是源代码，具体学习的探索的过程，见我的学习过程屏幕录像。
+
+【test_mnist.py】
+```
+import tensorflow as tf
+from PIL import Image
+import numpy as np
+
+# 超参数
+learning_rate = 0.5 #学习率
+epochs = 10 #训练的轮数，即是说，训练多少轮
+batch_size = 100 #每次增加训练用的图片数量 （这其实把训练所用的所有图片进行按batch_size为单位数量进行分堆，每次迭代只读取一堆）
+
+#获取图片
+im = Image.open('./images/text.png')
+data = list(im.getdata())
+result = [(255-x)*1.0/255.0 for x in data] 
+print(result)
+#定义一个点位节点变量表示输入层所需要的矩阵——就是一系列的训练图片集，因为每张图片的像素是28x28,所以每张图片的总像素为：784（这时每张图片都变成了一维向量，这个向量包含了784个像素的值），而二维矩阵的另一维（就是None表示那一维）是用来表示总共有多少张图片
+#one_hot又称之为：独热，
+x=tf.placeholder("float",[None,784])
+
+#下面定义预设的隐藏层所需要的权重与偏置值的正态分布集合
+w1=tf.Variable(tf.random_normal([784,300],stddev=0.03),name='w1')
+# W是Softmax模型的参数，将一个784维的输入转换为一个300维的输出
+b1=tf.Variable(tf.random_normal([300]),name="b1")
+# b是又一个Softmax模型的参数，我们一般叫做“偏置项”（bias）。
+#w1=tf.Variable(tf.zeros([784,300]),name='w1')
+#b1=tf.Variable(tf.zeros([300]),name="b1")
+
+#下面定义预设的输出层所需要的权重与偏置值
+w2=tf.Variable(tf.random_normal([300,10],stddev=0.03),name='w2')
+b2=tf.Variable(tf.random_normal([10]),name='b2')
+#下面构造隐藏层网络，定义运算
+hidden_out=tf.add(tf.matmul(x,w1),b1) #--hidden_out=wx+b
+#这儿使用了激活函数relu，激活函数的作用是，让神经网络层的加权和计算的线性化消失，变成非线性化。
+hidden_out=tf.nn.relu(hidden_out)
+#构造输出层，定义运算
+
+# 在输出层之前加入dropout以减少过拟合
+keep_prob = tf.placeholder("float")
+h_fc1_drop = tf.nn.dropout(hidden_out, keep_prob)
+
+# y=softmax(Wx + b)，y表示模型的输出，使用了一种保证实际图像y_和y尽量相似的模型算法softmax，总之softmax将输出层的输出结果变成了概率分布的表示
+y_ = tf.nn.softmax(tf.matmul(h_fc1_drop, w2) + b2) #加权变换并进行softmax回归，得到预测概率
+#上一句中，使用hiden_out作为公式中的x，因为输出层使用隐藏层的输出结果作为输入值（一般使用x表示输入值）
+# 下面定义的是初始化所有变量的运算
+init_op = tf.global_variables_initializer()
+
+#--在开始训练之前定义一个saver对象
+saver = tf.train.Saver() # 定义saver
+
+# 开始会话进行训练
+with tf.Session() as sess:
+    #使用with语句的好处是：sess对象，在最后会自动执行sess.close，就不用显式的写这句代码了，与打开文件的操作是一样的。
+    # 下一句代码才真正执行了初始化所有变量的运算
+    sess.run(init_op)
+
+    saver.restore(sess, "./_save/model.ckpt")#这里使用了之前保存的模型参数
+
+    prediction = tf.argmax(y_,1)
+    predint = prediction.eval(feed_dict={x: [result],keep_prob: 1.0}, session=sess)
+
+    print("recognize result: %d" %predint[0])
+
+
+
+```
+
+【为了保存训练后得到的参数模型，对mnist.py文件的最后作了修改】
+```
+#--在开始训练之前定义一个saver对象
+saver = tf.train.Saver() # 定义saver
+
+# 开始会话进行训练
+with tf.Session() as sess:
+    #使用with语句的好处是：sess对象，在最后会自动执行sess.close，就不用显式的写这句代码了，与打开文件的操作是一样的。
+    # 下一句代码才真正执行了初始化所有变量的运算
+    sess.run(init_op)
+    total_batch = int(len(mnist.train.labels) / batch_size) #得到按batch_size指定的单位量来分堆训练集中的所有图片，总共分为了多少堆
+    #mnist.train.labels表示训练图像的标签，它的形状是（55000，10），即是说对应的图片正确的答案(图片上的数字是几)
+    for epoch in range(epochs): #训练epochs参数指定数量的迭代次数
+        avg_cost = 0
+        for i in range(total_batch): #每次读取一堆图片进行训练
+            batch_x, batch_y = mnist.train.next_batch(batch_size=batch_size) #执行读取下一堆图片的操作。
+            #上一句就读出下一堆图片中的两个信息的分别组成的矩阵，batch_x这个矩阵中，存储了所有一堆图片的全部728个像素的向量作行，图片数量作列的矩阵，这是输入用的信息，是x值 的来源，作为输入值。
+            #而batch_y这个矩阵中，存储的是所有图片 正确的答案的独热表示（？）的一个矩阵
+            _,c = sess.run([optimiser, cross_entropy], feed_dict={x: batch_x, y: batch_y})
+            #上一行语句中，将batch_x赋值给占位变量x（输入用的，前面 使用placeholder定义的）
+            #将batch_y赋值给占位变量y（输出用的，前面使用placeholder定义的）
+            #上一行语句中，同时执行了两个运算，一个是计算交叉熵差别的运算，一个是进行优化的算法的运算
+            #python的表达式运算是从右往左，因此，上一句代码，就按上面定义运算时的顺序执行了这些运算
+            #feed_dict的讲解：https://blog.csdn.net/woai8339/article/details/82958649
+
+            avg_cost += c / total_batch
+            print(_,c,avg_cost)
+        print("Epoch:", (epoch + 1), "cost =", "{:.3f}".format(avg_cost))
+    #--保存训练得到的模型
+    saver.save(sess, './_save/model.ckpt') #模型储存位置
+    #调用测试数据集，来验证训练的效果。
+    print(sess.run(accuracy, feed_dict={x: mnist.test.images, y: mnist.test.labels}))
+
+```
+就是增加了保存训练后的参数模型的代码，也很简单，就是直接保存会话。
