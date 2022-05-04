@@ -1,0 +1,311 @@
+Python+tensorflow学习
+准备开始识别手写数字08
+
+今天继续尝试准备做入门级的人工智能——识别手写数字。今天的任务尝试书写尝试自己的手写数字的代码。
+
+今天学习继续参照的博文是：
+https://www.cnblogs.com/qiuhlee/p/9866222.html
+下面是今天修改并增加注释后的源代码，具体学习的探索的过程，见我的学习过程屏幕录像。
+
+【test_mnist.py】
+```
+import tensorflow as tf
+from PIL import Image
+import numpy as np
+
+# 超参数
+learning_rate = 0.5 #学习率
+epochs = 10 #训练的轮数，即是说，训练多少轮
+batch_size = 100 #每次增加训练用的图片数量 （这其实把训练所用的所有图片进行按batch_size为单位数量进行分堆，每次迭代只读取一堆）
+
+#获取图片
+im = Image.open('5.png').convert('L')
+'''
+convert()是图像实例对象的一个方法，接受一个 mode 参数，用以指定一种色彩模式
+1 ------------------（1位像素，黑白，每字节一个像素存储）
+L ------------------（8位像素，黑白）
+P ------------------（8位像素，使用调色板映射到任何其他模式）
+RGB------------------（3x8位像素，真彩色）
+RGBA------------------（4x8位像素，带透明度掩模的真彩色）
+CMYK--------------------（4x8位像素，分色）
+YCbCr--------------------（3x8位像素，彩色视频格式）
+I-----------------------（32位有符号整数像素）
+F------------------------（32位浮点像素）
+链接：https://www.jianshu.com/p/bdd9bfcbedb7
+引用：https://blog.csdn.net/icamera0/article/details/50843172
+'''
+data = list(im.getdata()) #获取数据，并转换为列表，每个像素都 是列表中的一个元素。每个元素都 只有两种值，不是255（表示白）就是 0（表示黑），共784个元素（28x28）（图片的长为28px，宽28px）
+result = [(255-x)*1.0/255.0 for x in data] #进一步进行二值化操作，将原列表中的255变成0，将0变成1。
+#result=data
+print(result)
+#定义一个点位节点变量表示输入层所需要的矩阵，因为每张图片的像素是28x28,所以每张图片的总像素为：784（这时每张图片都变成了一维向量，这个向量包含了784个像素的值），而二维矩阵的另一维（就是None表示那一维）是用来表示总共有多少张图片
+#one_hot又称之为：独热，
+x=tf.placeholder("float",[None,784])
+
+#下面定义预设的隐藏层所需要的权重与偏置值的正态分布集合
+w1=tf.Variable(tf.random_normal([784,300],stddev=0.03),name='w1')
+# W是Softmax模型的参数，将一个784维的输入转换为一个300维的输出
+b1=tf.Variable(tf.random_normal([300]),name="b1")
+# b是又一个Softmax模型的参数，我们一般叫做“偏置项”（bias）。
+#w1=tf.Variable(tf.zeros([784,300]),name='w1')
+#b1=tf.Variable(tf.zeros([300]),name="b1")
+
+#下面定义预设的输出层所需要的权重与偏置值
+w2=tf.Variable(tf.random_normal([300,10],stddev=0.03),name='w2')
+b2=tf.Variable(tf.random_normal([10]),name='b2')
+
+#=====进行运算定义，这儿并没有开始运算，只是写好“算式”=======================
+#下面构造隐藏层网络，定义运算
+hidden_out=tf.add(tf.matmul(x,w1),b1) #--hidden_out=wx+b
+#这儿使用了激活函数relu，激活函数的作用是，让神经网络层的加权和计算的线性化消失，变成非线性化。
+hidden_out=tf.nn.relu(hidden_out)
+#构造输出层，定义运算
+
+# 在输出层之前加入dropout以减少过拟合，应当在训练的时候使用，这是测试，就不要使用下面两行代码
+keep_prob = tf.placeholder("float") #这是定义的一个输入点位符号
+#h_fc1_drop = tf.nn.dropout(hidden_out, keep_prob)
+'''
+Dropout就是在不同的训练过程中随机扔掉一部分神经元。也就是让某个神经元的激活值以一定的概率p，让其停止工作，这次训练过程中不更新权值，也不参加神经网络的计算。但是它的权重得保留下来（只是暂时不更新而已），因为下次样本输入时它可能又得工作了
+来源：https://blog.csdn.net/yangfengling1023/article/details/82911306
+*train的时候才是dropout起作用的时候，test的时候不应该让dropout起作用
+'''
+
+
+# y=softmax(Wx + b)，y表示模型的输出，使用了一种保证实际图像y_和y尽量相似的模型算法softmax，总之softmax将输出层的输出结果变成了概率分布的表示
+#y_ = tf.nn.softmax(tf.matmul(h_fc1_drop, w2) + b2) #加权变换并进行softmax回归，得到预测概率
+y_ = tf.nn.softmax(tf.matmul(hidden_out, w2) + b2) #加权变换并进行softmax回归，得到预测概率
+#上一句中，使用hiden_out作为公式中的x，因为输出层使用隐藏层的输出结果作为输入值（一般使用x表示输入值）
+# 下面定义的是初始化所有变量的运算
+init_op = tf.global_variables_initializer()
+
+#--在开始训练之前定义一个saver对象
+saver = tf.train.Saver() # 定义saver
+
+# 开始会话进行训练
+with tf.Session() as sess:
+    #使用with语句的好处是：sess对象，在最后会自动执行sess.close，就不用显式的写这句代码了，与打开文件的操作是一样的。
+    # 下一句代码才真正执行了初始化所有变量的运算
+    sess.run(init_op)
+
+    saver.restore(sess, "./_save/model.ckpt")#这里使用了之前保存的模型参数，将之前保存的数据还原到当前会话中
+
+    prediction = tf.argmax(y_,1) #在得到的输出 结果 y_这个矩阵中，按行（第二个参数等于1）寻找每行的最大值 ，组成一个向量
+    predint = prediction.eval(feed_dict={x: [result],keep_prob: 1.0}, session=sess)
+    '''
+    关于eval的用法：https://blog.csdn.net/weixin_43082510/article/details/83274261
+    t.eval(sess) 等价于 sess.run(t)
+    上一句来自：https://blog.csdn.net/z2539329562/article/details/83501412
+    eval()其实就是tf.Tensor的session.run()的另一种写法，
+    继续摘录此博文如下：
+    1、eval()也是启动计算的一种方式。基于tensorflow基本原理，首先需要定义图，然后计算图，
+    其中计算图的函数有常见的run()函数，如sess.run()，eval()也是类似。
+    2、eval()只能用于tf.tensor类对象，也就是有输出的operaton。没有输出的operation，使用
+    session.run()。
+
+    '''
+
+    print("recognize result: %d" %predint[0])
+
+
+```
+
+【mnist.py】
+```
+import tensorflow as tf
+import input_data
+
+# 超参数
+learning_rate = 0.5 #学习率
+epochs = 10 #训练的轮数，即是说，训练多少轮
+batch_size = 100 #每次增加训练用的图片数量 （这其实把训练所用的所有图片进行按batch_size为单位数量进行分堆，每次迭代只读取一堆）
+
+#获取图片数据集
+mnist=input_data.read_data_sets("MNIST_data/",one_hot=True)
+#定义一个点位节点变量表示输入层所需要的矩阵——就是一系列的训练图片集，因为每张图片的像素是28x28,所以每张图片的总像素为：784（这时每张图片都变成了一维向量，这个向量包含了784个像素的值），而二维矩阵的另一维（就是None表示那一维）是用来表示总共有多少张图片
+#one_hot又称之为：独热，
+'''
+图像标签的独热表示
+变量mnist.train.labels表示训练图像的标签，它的形状是（55000，10）。原始的图像标签是数字0-9，我们完全可以用一个数字来存储图像标签，但为什么这里每个训练标签是一个10维的向量呢？其实，这个10维的向量是原先类别号的独热（one-hot）表示。所谓独热表示，就是“一位有效编码”。我们用N维的向量来表示N个类别，每个类别占据独立的一位，任何时候独热表示中只有一位是“1”，其他都为“0”。我们可以从下面这个表格中理解独热表示：
+原文：https://blog.csdn.net/ruanjianbu/article/details/87735057 
+'''
+x=tf.placeholder("float",[None,784])
+#上一行代码中，“float”指明了此变量的数据类型，后面的列表中，指明了一个矩形区域，其中None表示任意数(就是可以接受输入任意张的图片)，在真正执行这个变量时，再设置也可。
+#placeholder点位节点表示 一个等待输入的节点。
+#下面是输出层所需要的点位节点，输出为one_hot模式，我的理解是，one_hot模式就是一个有十个元素的列表，每个元素都只能取0-9之间的一个整数值，用以表示输出结果（也就是神经网络猜测（预测）的结果）
+y=tf.placeholder("float",[None,10])
+
+#下面定义预设的隐藏层所需要的权重与偏置值的正态分布集合
+w1=tf.Variable(tf.random_normal([784,300],stddev=0.03),name='w1')
+# W是Softmax模型的参数，将一个784维的输入转换为一个300维的输出
+b1=tf.Variable(tf.random_normal([300]),name="b1")
+# b是又一个Softmax模型的参数，我们一般叫做“偏置项”（bias）。
+#w1=tf.Variable(tf.zeros([784,300]),name='w1')
+#b1=tf.Variable(tf.zeros([300]),name="b1")
+
+#下面定义预设的输出层所需要的权重与偏置值
+w2=tf.Variable(tf.random_normal([300,10],stddev=0.03),name='w2')
+b2=tf.Variable(tf.random_normal([10]),name='b2')
+'''
+https://blog.csdn.net/dcrmg/article/details/79028043
+tf.random_normal()函数用于从服从指定正太分布的数值中取出指定个数的值。
+tf.random_normal(shape, mean=0.0, stddev=1.0, dtype=tf.float32, seed=None, name=None)
+    shape: 输出张量的形状，必选
+    mean: 正态分布的均值，默认为0
+    stddev: 正态分布的标准差，默认为1.0
+    dtype: 输出的类型，默认为tf.float32
+    seed: 随机数种子，是一个整数，当设置之后，每次生成的随机数都一样
+    name: 操作的名称
+'''
+#下面构造隐藏层网络，定义运算
+hidden_out=tf.add(tf.matmul(x,w1),b1) #--hidden_out=wx+b
+#这儿使用了激活函数relu，激活函数的作用是，让神经网络层的加权和计算的线性化消失，变成非线性化。
+hidden_out=tf.nn.relu(hidden_out)
+'''
+relu运算：
+https://www.cnblogs.com/xh_chiang/p/9132524.html
+TF-激活函数 tf.nn.relu 介绍
+tf.nn.relu(features, name = None)
+ 这个函数的作用是计算激活函数 relu，即 max(features, 0)。即将矩阵中每行的非最大值置0。
+import tensorflow as tf
+a = tf.constant([-1.0, 2.0])
+with tf.Session() as sess:
+    b = tf.nn.relu(a)
+    print sess.run(b)
+以上程序输出的结果是：[0. 2.]（因为-1.0不是这一行中的最大值，所以被置为0，其实我的理解是，此时，就变成了独热表示了）
+'''
+# 在输出层之前加入dropout以减少过拟合，应当在训练的时候使用，测试就不要使用下面两行代码
+keep_prob = tf.placeholder("float")
+h_fc1_drop = tf.nn.dropout(hidden_out, keep_prob)
+'''
+Dropout就是在不同的训练过程中随机扔掉一部分神经元。也就是让某个神经元的激活值以一定的概率p，让其停止工作，这次训练过程中不更新权值，也不参加神经网络的计算。但是它的权重得保留下来（只是暂时不更新而已），因为下次样本输入时它可能又得工作了
+来源：https://blog.csdn.net/yangfengling1023/article/details/82911306
+*train的时候才是dropout起作用的时候，test的时候不应该让dropout起作用
+'''
+
+
+#构造输出层，定义运算
+# y=softmax(Wx + b)，y表示模型的输出，使用了一种保证实际图像y_和y尽量相似的模型算法softmax，总之softmax将输出层的输出结果变成了概率分布的表示
+y_ = tf.nn.softmax(tf.matmul(h_fc1_drop, w2) + b2) #加权变换并进行softmax回归，得到预测概率（即是指结果 是某个值的概率有多大，概率是一个大于零，小于	1的数）
+#上一句中，使用hiden_out（h_fc1_drop是hiden_out运算之后得到的）作为公式中的x，因为输出层使用隐藏层的输出结果作为输入值（一般使用x表示输入值）
+#因为作为正确答案的y是独热表示 的，所以这儿，y_也被变成独热表示了。（方便后面对比，计算交叉熵损失）
+'''
+《TensorFlow：实战Google深度学习框架（第二版）》p76
+就是说，任意事件发生的概率都在0 和1 之间，且总有某一个事件发生（ 概率的和为1 ）。
+如果将分类问题中“ 一个样例属于某一个类别”看成一个概率事件，那么训练数据的正确答案就符合一个概率分布。
+因为事件“ 一个样例属于不正确的类别”的概率为0,而“ 一个样例属于正确的类别”的概率为l 。
+如何将神经网络前向传播得到的结果也变成概率分布呢？ 
+Softmax 回归就是一个非常常用的方法。Softmax 回归本身可以作为一个学习算法来优化分类结果，但在TensorFlow 中，
+ softmax回归的参数被去掉了，它只是一层额外的处理层，将神经网络的输出变成一个概率分布。
+'''
+#---下面进入损失函数阶段------------------
+#下面就是计算y，和 y_的差别是多大。
+#下面求交叉熵损失——通过交叉熵来计算【预测的概率分布】（上面的softmax回归函数已经将输出层的结果变成了概率分布结果）和【真实答案的概率分布】之间的距离了。（距离值越小，就说明预测得越准确）
+y_clipped = tf.clip_by_value(y_, 1e-10, 0.9999999)
+cross_entropy = -tf.reduce_mean(tf.reduce_sum(y * tf.log(y_clipped) + (1 - y) * tf.log(1 - y_clipped), axis=1))
+#现在cross_entropy中存放的就是损失值
+'''
+《TensorFlow：实战Google深度学习框架（第二版）》p77
+reduce_mean用于求出平均值，axis=1说明是求矩阵中每行的平均值。
+通过tf.clip_by_value 函数可以将一个张量中的数值限制在一个范围之内，这样可以避免一些运算错误（比如logO 是无效的）。
+下面给出了使用tf.clip_by_value 的简单样例：
+v = tf.constant([[l.0, 2.0 , 3.0], [4.0,5.0,6.0]))
+print tf.clip_by_value(v, 2.5, 4.5).eval()
+＃输出［［ 2.5 2.5 3.] [ 4. 4.5 4.5]]
+在以上样例中可以看到，小于2.5 的数都被换成了2.5 ，而大于4.5 的数都被换成了4.5 。
+------------------------------------------------------------
+至此，我们得到了两个重要的Tensor：y和y_。
+y_是模型的输出（即通过隐藏层计算预测后经输出层输出的预测值，是概率分布表示），y是实际的图像标签（就是它本来的正确值的概率分布），不要忘了y是独热表示的（独热表示与概率分布表示有相关吗？？）
+下面我们就会根据y和y_构造损失
+根据y, y_构造交叉熵损失
+cross_entropy = tf.reduce_mean(-tf.reduce_sum(y * tf.log(y_)))
+原文：https://blog.csdn.net/ruanjianbu/article/details/87735057 
+------------------------------------------------------------------------------
+《TensorFlow：实战Google深度学习框架（第二版）》p76
+交叉熵损失只能计算两个概念分布之间的相距值（相似度),因此之前要使用softmax这样的回归函数将结果概率化。
+交叉熵函数不是对称的C H(p, q ):;: H(q,p ）） ，
+它刻画的是通过概率分布q 来表达概率分布p 的困难程度。
+因为正确答案是希望得到的结果，所以当交叉熵作为神经网络的损失函数时， p 代表的是正确答案， q 代表的是预测值。
+交叉脑刻画的是两个概率分布的距离，也就是说交叉熵值越小， 两个概率分布越接近。
+下面将给出两个具体样例来直观地说明通过交叉熵可以判断预测答案和真实答案之间的距离。
+假设有一个三分类问题，某个样例的正确答案是（ l，0，0 ） 。
+某模型经过Softmax 回归之后的预测答案是（ 0.5 ,0.4 ,0.1 ），那么这个预测和正确答案之间的交叉娟为：
+H((1, 0, 0), (0.5, 0.4, 0.1)) ＝-(1x log0.5 + 0 x log0.4 + 0 x log0.1)≈0.3
+如果另外一个模型的预测是（0.8,0.1 , 0. l ），那么这个预测值和真实值之间的交叉熵是：
+H((1, 0, 0), (0.8, 0.1, 0.1)) ＝-(1x log0.8 + 0 x log0.1 + 0 x log0.1)≈0.1
+从直观上可以很容易地知道第二个预测答案要优于第一个。通过交叉熵计算得到的结果也是一致的（第二个交叉熵的值更小）
+'''
+
+#tensorflow中有一个综合性的函数同时实现回归计算成概率分布后，再直接比较相似度：
+'''
+《TensorFlow：实战Google深度学习框架（第二版）》p78
+因为交叉煽一般会与softmax 回归一起使用，所以TensorFlow 对这两个功能进行了统一封装，
+并提供了tf.nn.softmax_cross_entropy_with_logits 函数。
+比如可以直接通过以下代码来实现使用了softmax 回归之后的交叉崎损失函数：
+cross entropy= tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=y_)
+其中y_代表了原始神经网络的输出结果，而y给出了标准答案。（这两者都是概率分布的表现形式）
+'''
+
+#下面使用基础梯度下降算法构建一个优化器，（优化算法，如反向传播算法和梯度下降算法），这可以使损失函数的计算结果更小（即预测值更接近于正确值 ）
+optimiser = tf.train.GradientDescentOptimizer(learning_rate=learning_rate).minimize(cross_entropy)
+'''
+在这儿：learning_rate是学习率，cross_entropy是损失率的值
+来自链接：https://www.jianshu.com/p/200f3c4336a3
+tf.train.AdamOptimizer()是利用自适应学习率的优化算法，Adam 算法和随 机梯度下降算法不同。随机梯度下降算法保持单一的学习率更新所有的参数，学习率在训练过程中并不会改变。而 Adam 算法通过计算梯度的一阶矩估计和二 阶矩估计而为不同的参数设计独立的自适应性学习率。学习率：决定每次参数更新的幅度。优化器中都需要一个叫做学习率的参数，使用时，如果学习率选择过大会出现震 荡不收敛的情况，如果学习率选择过小，会出现收敛速度慢的情况。我们可以选 个比较小的值填入，比如 0.01、0.001
+-------------------------
+https://www.cnblogs.com/muhe221/articles/10186156.html
+
+'''
+#定义初始化operation和准确率node
+# 下面定义的是初始化所有变量的运算
+init_op = tf.global_variables_initializer()
+
+# 创建准确率节点，也就是说，将结果值y变成独热表示 后，再把验证值（正确值 ）也变成独热表示后，进行比较
+correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+'''
+argmax函数在寻找y与y_中的最大值所在的Index（在矩阵中按行找，即找出每行中的最大值所在的Index，因为第二个参数为1，表示 按行找，当第二个参数为0时就表示 按列找）
+https://blog.csdn.net/weixin_38145317/article/details/79650188
+有详细解释。
+于是得到的结果是一个长度为 batch（每次迭代时从数据集中选取的图片张数，对应于输入层x定义的那个None点位，即一次输入的图片总数） 的一维数组，这个一维数组中的值就表示了每一个样例对应的数字识别结果。
+因为y与y_都是batch长度x10的矩阵，因此，argmax运算后的结果就是：10个的长度长的一个一维数组，结果类似于[0,0,0,1,0,0,0,0,0,0]我感觉这就是一个独热表示，因此可以表示当前图片实际的结果值 ，如我所写的这个列表的值代表的是3类（类别）（图片识别结果为数字3）
+------------------------------
+tf.equal函数比较两个结果是否相等，即是说实际值 与预测值是否相等，相等就返回True,不相等就返回False
+'''
+accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+'''
+这个运算首先将一个布尔型的数值转换为实数型，然后计算平均值。这个平均值就是模型在这一组数据上的正确率。转换之后，True与False变成了1与0
+tf.cast()转换类型。
+'''
+
+#--在开始训练之前定义一个saver对象
+saver = tf.train.Saver() # 定义saver
+
+# 开始会话进行训练
+with tf.Session() as sess:
+    #使用with语句的好处是：sess对象，在最后会自动执行sess.close，就不用显式的写这句代码了，与打开文件的操作是一样的。
+    # 下一句代码才真正执行了初始化所有变量的运算
+    sess.run(init_op)
+    total_batch = int(len(mnist.train.labels) / batch_size) #得到按batch_size指定的单位量来分堆训练集中的所有图片，总共分为了多少堆
+    #mnist.train.labels表示训练图像的标签，它的形状是（55000，10），即是说对应的图片正确的答案(图片上的数字是几)
+    for epoch in range(epochs): #训练epochs参数指定数量的迭代次数
+        avg_cost = 0
+        for i in range(total_batch): #每次读取一堆图片进行训练
+            batch_x, batch_y = mnist.train.next_batch(batch_size=batch_size) #执行读取下一堆图片的操作。
+            #上一句就读出下一堆图片中的两个信息的分别组成的矩阵，batch_x这个矩阵中，存储了所有一堆图片的全部728个像素的向量作行，图片数量作列的矩阵，这是输入用的信息，是x值 的来源，作为输入值。
+            #而batch_y这个矩阵中，存储的是所有图片 正确的答案的独热表示（？）的一个矩阵
+            _,c = sess.run([optimiser, cross_entropy], feed_dict={x: batch_x, y: batch_y})
+            #上一行语句中，将batch_x赋值给占位变量x（输入用的，前面 使用placeholder定义的）
+            #将batch_y赋值给占位变量y（输出用的，前面使用placeholder定义的）
+            #上一行语句中，同时执行了两个运算，一个是计算交叉熵差别的运算，一个是进行优化的算法的运算
+            #python的表达式运算是从右往左，因此，上一句代码，就按上面定义运算时的顺序执行了这些运算
+            #feed_dict的讲解：https://blog.csdn.net/woai8339/article/details/82958649
+
+            avg_cost += c / total_batch
+            print(_,c,avg_cost)
+        print("Epoch:", (epoch + 1), "cost =", "{:.3f}".format(avg_cost))
+    #--保存训练得到的模型，直接保存会话
+    saver.save(sess, './_save/model.ckpt') #模型储存位置
+    #调用测试数据集，来验证训练的效果。
+    print(sess.run(accuracy, feed_dict={x: mnist.test.images, y: mnist.test.labels}))
+
+
+```
